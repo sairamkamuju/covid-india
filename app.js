@@ -10,87 +10,87 @@ const dbPath = path.join(__dirname, "covid19India.db");
 let db = null;
 
 const objectSnakeToCamel = (newObject) => {
-  return {
-    stateId: newObject.state_id,
-    stateName: newObject.state_name,
-    population: newObject.population,
-  };
+    return {
+        stateId: newObject.state_id,
+        stateName: newObject.state_name,
+        population: newObject.population,
+    };
 };
 
 const districtSnakeToCamel = (newObject) => {
-  return {
-    districtId: newObject.district_id,
-    districtName: newObject.district_name,
-    stateId: newObject.state_id,
-    cases: newObject.cases,
-    cured: newObject.cured,
-    active: newObject.active,
-    deaths: newObject.deaths,
-  };
+    return {
+        districtId: newObject.district_id,
+        districtName: newObject.district_name,
+        stateId: newObject.state_id,
+        cases: newObject.cases,
+        cured: newObject.cured,
+        active: newObject.active,
+        deaths: newObject.deaths,
+    };
 };
 
 const reportSnakeToCamelCase = (newObject) => {
-  return {
-    totalCases: newObject.cases,
-    totalCured: newObject.cured,
-    totalActive: newObject.active,
-    totalDeaths: newObject.deaths,
-  };
+    return {
+        totalCases: newObject.cases,
+        totalCured: newObject.cured,
+        totalActive: newObject.active,
+        totalDeaths: newObject.deaths,
+    };
 };
 
 const initializeDBAndServer = async () => {
-  try {
-    db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database,
-    });
-    app.listen(3000, () => {
-      console.log("Server Is Running");
-    });
-  } catch (e) {
-    console.log(`error ${e.message}`);
-    process.exit(1);
-  }
+    try {
+        db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database,
+        });
+        app.listen(3000, () => {
+            console.log("Server Is Running");
+        });
+    } catch (e) {
+        console.log(`error ${e.message}`);
+        process.exit(1);
+    }
 };
 initializeDBAndServer();
 
 app.get("/states/", async (request, Response) => {
-  const allStatesList = `
+    const allStatesList = `
     SELECT * 
     FROM 
     state 
     ORDER BY state_id;`;
-  const statesList = await db.all(allStatesList);
-  const statesResult = statesList.map((eachObject) => {
-    return objectSnakeToCamel(eachObject);
-  });
-  response.send(statesResult);
+    const statesList = await db.all(allStatesList);
+    const statesResult = statesList.map((eachObject) => {
+        return objectSnakeToCamel(eachObject);
+    });
+    response.send(statesResult);
 });
 
 app.get("/states/:stateId/", async (request, response) => {
-  const { stateId } = request.params;
-  const getState = `
+    const { stateId } = request.params;
+    const getState = `
     SELECT * 
     FROM 
     state 
     WHERE 
     state_id = ${stateId};`;
-  const newState = await db.get(getState);
-  const stateResult = objectSnakeToCamel(newState);
-  response.send(stateResult);
+    const newState = await db.get(getState);
+    const stateResult = objectSnakeToCamel(newState);
+    response.send(stateResult);
 });
 
 app.post("/districts/", async (request, response) => {
-  const createDistrict = request.body;
-  const {
-    districtName,
-    stateId,
-    cases,
-    cured,
-    active,
-    deaths,
-  } = createDistrict;
-  const newDistrict = `
+    const createDistrict = request.body;
+    const {
+        districtName,
+        stateId,
+        cases,
+        cured,
+        active,
+        deaths,
+    } = createDistrict;
+    const newDistrict = `
     INSERT INTO 
     district (district_name,state_id,cases,cured,active,deaths)
     VALUES
@@ -100,13 +100,13 @@ app.post("/districts/", async (request, response) => {
     ${cured},
     ${active},
     ${deaths});`;
-  const addDistrict = await db.run(newDistrict);
-  const districtId = addDistrict.lastId;
-  response.send("District Successfully Added");
+    const addDistrict = await db.run(newDistrict);
+    const districtId = addDistrict.lastId;
+    response.send("District Successfully Added");
 });
 
-app.get("/districts/:districtId/", async (request,response) => {
-    const {districtId} = request.params;
+app.get("/districts/:districtId/", async (request, response) => {
+    const { districtId } = request.params;
     const getDistrict = `
     SELECT * 
     FROM district 
@@ -117,8 +117,8 @@ app.get("/districts/:districtId/", async (request,response) => {
     response.send(districtResult);
 });
 
-app.delete("/districts/:districtId/", async(request,response) => {
-    const {districtId} = request.params;
+app.delete("/districts/:districtId/", async (request, response) => {
+    const { districtId } = request.params;
     const deleteDistrict = `
     DELETE 
     FROM 
@@ -129,8 +129,8 @@ app.delete("/districts/:districtId/", async(request,response) => {
     response.send("District Removed");
 });
 
-app.put("/districts/:districtId/", async (request,response) => {
-    const {districtId} = request.params;
+app.put("/districts/:districtId/", async (request, response) => {
+    const { districtId } = request.params;
     const districtDetails = request.body;
     const {
         districtName,
@@ -139,9 +139,9 @@ app.put("/districts/:districtId/", async (request,response) => {
         cured,
         active,
         deaths,
-    }  = districtDetails;
+    } = districtDetails;
 
-    const updateDistrict =`
+    const updateDistrict = `
     UPDATE 
     district 
     SET 
@@ -159,8 +159,8 @@ app.put("/districts/:districtId/", async (request,response) => {
     response.send("District Details Updated");
 });
 
-app.get("/states/:statesId/stats/", async(request,response) => {
-    const {stateId} = request.params;
+app.get("/states/:statesId/stats/", async (request, response) => {
+    const { stateId } = request.params;
     const getStateReport = `
     SELECT SUM(cases) AS cases,
     SUM(cured) AS cured,
@@ -174,15 +174,15 @@ app.get("/states/:statesId/stats/", async(request,response) => {
     response.send(resultReport);
 });
 
-app.get("/districts/:districtId/details/", async (request,response) => {
-    const {districtId} = request.params;
+app.get("/districts/:districtId/details/", async (request, response) => {
+    const { districtId } = request.params;
     const stateDetails = `
     SELECT state_name 
     FROM state JOIN district 
     ON state.state_id = district.state_id
     WHERE district.district_id = ${districtId};`;
     const stateName = await db.get(stateDetails);
-    response.send({stateName : stateName.state_name});
+    response.send({ stateName: stateName.state_name });
 });
 
 module.exports = app;
